@@ -1,7 +1,9 @@
 ## Java Microbenchmarking for Dummies
 
 ### Что такое JMH?
+
 #### По старинке
+
 ```java
 long start = System.currentTimeMillis();
 doCalculation();
@@ -10,18 +12,54 @@ System.out.println("Seconds elapsed: " + (start - end) / 1000F + " seconds." );
 ```
 
 #### JMH = Java Microbenchmark Harness
-*JMH* - это инструмент Java для сборки, запуска и анализа нано / микро / милли / макро тестов, написанных на Java и других языках. предназначенных для JVM.
+
+_JMH_ - это инструмент Java для сборки, запуска и анализа нано / микро / милли / макро тестов, написанных на Java и других языках, предназначенных для JVM.
+_JMH_ разрабатывался теме же людьми, которые реализовывали JVM чтобы понять как Java выполняет оптимизацию во ввремя выполнения.
+
+Часто имеется небольшой блок кода, который является критичным для производительности программы.
+Например, часть приложения, которая включает в себя большое количество вычислений и обработки данных, является критичной для производительности, а измерение времени выполнения этой части и называется _микро-тестированием_(micro-benchmarking). Выполнение этой операции несколько раз в определнной среде с определенной конфигурацией памяти и ЦП, позволяет получить согласованные(consistent) результаты. Время выполнения каждого прогона записывается и консолидируется для получения среднего времени, известного как микро-эталоны(micro-benchmarks).
 
 ### Возможности
-* Add a JVM warm-up stage.
-* Specify the number of runs/threads in each run.
-* Calculate the precise average/single execution time.
-* Share a common scope between executed tests.
-* Configure the result output format.
-* Add specific JVM related params (e.g. disable inlining).
+
+- разогревать JVM(add a JVM warm-up stage);
+- задавать количество прогонов/потоков в каждом прогоне(specify the number of runs/threads in each run);
+- рассчитать точное среднее/единичное время выполнения(calculate the precise average/single execution time).
+- пользоваться общим скоупом между тестами(share a common scope between executed tests).
+- настраивать формат вывода результатов(configure the result output format).
+- Конфигурировать JVM специфичные параметры, напр. отключить втраивание (add specific JVM related params, e.g. disable inlining).
 
 ### Основы
-*JMH* стало частью JDK начиная с JDK 12; для более ранних версий, надо явно указывать зависимости в проекте.
+
+_JMH_ стало частью JDK начиная с JDK 12; для более ранних версий, надо явно указывать зависимости(`jmh-core` и `jmh-generator-annprocess`) в проекте.
+
+- Рекомендуемый способ запуска JMH тестов - использовать Maven для настройки автономного проекта, который зависит от jar-файлов нашего приложения. Этот подход предпочтителен для обеспечения правильной инициализации тестов и получения надежных результатов.
+
+- Можно выполнить тесты из существующего проекта и даже из среды IDE, однако настройка будет более сложной, аа результаты менее надежны.
+
+### Setting up the benchmarking project
+
+Следующая команда генерирует JMH-driven проект
+
+```
+mvn archetype:generate -DinteractiveMode=false -DarchetypeGroupId=org.openjdk.jmh -DarchetypeArtifactId=jmh-java-benchmark-archetype -DgroupId=org.sample -DartifactId=jmh-demo -Dversion=1.0
+```
+
+Следующая команда генерирует JMH-driven проект:
+
+```
+mvn archetype:generate \
+          -DinteractiveMode=false \
+          -DarchetypeGroupId=org.openjdk.jmh \
+          -DarchetypeArtifactId=jmh-java-benchmark-archetype \
+          -DgroupId=org.sample \
+          -DartifactId=test \
+          -Dversion=1.0
+```
+
+В результате получаем maven-проект:
+
+- pom.xml с двумя зависимостями
+
 ```java
     <dependencies>
         <dependency>
@@ -37,36 +75,32 @@ System.out.println("Seconds elapsed: " + (start - end) / 1000F + " seconds." );
         </dependency>
     </dependencies>
 ```
+
+- базовый класс `MyBenchmark.java` с одним @Benchmark-методом:
+
+```
+    @Benchmark
+    public void testMethod() {
+        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
+        // Put your benchmark code here.
+    }
+
+```
+
 Последние версии:
-* [JMH Core] (https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
-* [JMH Annottion Processor] (https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
 
-* The recommended way to run a JMH benchmark is to use Maven to setup a standalone project that depends on the jar files of your application. This approach is preferred to ensure that the benchmarks are correctly initialized and produce reliable results. 
-
-* It is possible to run benchmarks from within an existing project, and even from within an IDE, however setup is more complex and the results are less reliable.
-
-### Setting up the benchmarking project
-JMH Hello World
-```
-mvn archetype:generate -DinteractiveMode=false -DarchetypeGroupId=org.openjdk.jmh -DarchetypeArtifactId=jmh-java-benchmark-archetype -DgroupId=org.sample -DartifactId=jmh-demo -Dversion=1.0
-```
-The following command will generate the new JMH-driven project in test folder:
-```
-mvn archetype:generate \
-          -DinteractiveMode=false \
-          -DarchetypeGroupId=org.openjdk.jmh \
-          -DarchetypeArtifactId=jmh-java-benchmark-archetype \
-          -DgroupId=org.sample \
-          -DartifactId=test \
-          -Dversion=1.0
-```
+- [JMH Core](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
+- [JMH Annottion Processor](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
 
 #### Build
-Classic Maven: 'mvn clean install'
+
+Собираем проект "классической" командой maven: `mvn clean install`.
+
 Results at '/target/':
-* jmh-demo-1.0.jar - наши исходники
-* benchmark.jar - испольняемый jar-file
-   TODO 'картинка со структурой и рассказать что'
+
+- jmh-demo-1.0.jar - наши исходники
+- benchmark.jar - исполняемый jar-file
+  TODO 'картинка со структурой и рассказать что'
 
 ```ruby
 [INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ jmh-demo ---
@@ -81,14 +115,18 @@ Results at '/target/':
 ```
 
 ### Start benchmarking
+
+Запуск сгенеренного benchmarks.jar: `java -jar target/benchmarks.jar`
+
 Параметры:
-* "-f": number of forks = 1
-* "-wi": warm up iterations = 2
-* "-i": benchmark iterations = 5
+
+- "-f": number of forks = 1
+- "-wi": warm up iterations = 2
+- "-i": benchmark iterations = 5
 
 Например, `java -jar target/benchmarks.jar -f 1 -wi 2 -i 5`
 
-**  Splitting tasks into smaller tasks is referred to as forking tasks(http://tutorials.jenkov.com/images/java-concurrency-utils/java-fork-and-join-1.png)
+\*\* Splitting tasks into smaller tasks is referred to as forking tasks(http://tutorials.jenkov.com/images/java-concurrency-utils/java-fork-and-join-1.png)
 
 TODO What Is Warming up the JVM
 Once class-loading is complete, all important classes (used at the time of process start) are pushed into the JVM cache (native code) – which makes them accessible faster during runtime. Other classes are loaded on a per-request basis.
@@ -100,19 +138,25 @@ Keeping this in mind, for low-latency applications, we need to cache all classes
 This process of tuning the JVM is known as warming up.
 
 ### JMH Configuration
+
 #### Типы(mode) бенчмарков
+
 Типы конфигурируются через @BenchmarkMode
-* Throughput
-* AverageTime
-* SampleTime
-* SingleShotTime
+
+- Throughput
+- AverageTime
+- SampleTime
+- SingleShotTime
 
 #### Разминка(warmup) и выполнение(execution)
-Используя @Fork аннотацию мы можем управлять выполнением теста: 
-* "value" - этот параметр контролирует сколько раз benchmark будет выполняться;
-* "warmup" контролирует сколько раз benchmark будет выполняться для разминки, т.е. прежде чем реальные результаты будут собраны:
+
+Используя @Fork аннотацию мы можем управлять выполнением теста:
+
+- "value" - этот параметр контролирует сколько раз benchmark будет выполняться;
+- "warmup" контролирует сколько раз benchmark будет выполняться для разминки, т.е. прежде чем реальные результаты будут собраны:
 
 Пример: две разминки до одного реального прохода.
+
 ```java
 @Benchmark
 @Fork(value = 1, warmups = 2)
@@ -125,12 +169,14 @@ public void init() {
 Также @Warmup аннотация может использоваться для управления количеством итераций прогрева. Например, `@Warmup (iterations = 5)` сообщает JMH, что будет достаточно пяти итераций прогрева, в отличие от 20(по умолчанию).
 
 ##### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
+
 Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
 Мы можем изучить влияние на производительность, используя объект @State. Сам по себе наш @Benchmark будет использовать в качетве параметра наш объект аннотированный как @State
 
-*JMH можно конфигурировать через аннотации или опции *
+_JMH можно конфигурировать через аннотации или опции _
 
 #### Конфигурация через аннотации
+
 ```java
 
 @Benchmark
@@ -144,25 +190,43 @@ public void testMethod() {
 ```
 
 #### Конфигурация через опции
+
 ```java
 Options opt = new OptionsBuilder()
                 .include(JMHSample_01_HelloWorld.class.getSimpleName())
                 .warmupIterations(2)
                 .measurementIterations(5)
                 .forks(1)
-                .shouldDoGC(true) 
+                .shouldDoGC(true)
                 .build();
 ```
 
 ### Results of the Benchmark
 ```
+# JMH version: 1.22
+# VM version: JDK 1.8.0_231, Java HotSpot(TM) 64-Bit Server VM, 25.231-b11
+# VM invoker: C:\BIN\Java\jdk1.8.0_231\jre\bin\java.exe
+# VM options: <none>
+# Warmup: 1 iterations, 10 s each
+# Measurement: 2 iterations, 10 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: org.sample.ArraysSortBenchmark.testParallelArraySort_10
 ```
-* JHM measured average time:
-* 
+
+Benchmark | Mode | Cnt | Score | Error | Units
+--- | -- | - | -- | -- | --
+ArraysSortBenchmark.arraysSort | thrpt | 20 | 3795959.757 | 43679.226 | ops/s 
+ArraysSortBenchmark.collectionsSort | thrpt | 20 | 853014.250 | 6256.061 | ops/s 
+
+- JHM measured average time:
+-
+
 ### Relevant Links
+
 - [JDK Code Tools: jmh](https://openjdk.java.net/projects/code-tools/jmh/)
+- [Benchmarking spring-cloud-sleuth](https://github.com/spring-cloud/spring-cloud-sleuth/tree/master/benchmarks/src/main/java/org/springframework/cloud/sleuth/benchmarks/jmh/benchmarks)
 - [Warm up JVM](https://www.baeldung.com/java-jvm-warmup)
-- [JMH - Great Java Benchmarking] (https://dzone.com/articles/jmh-great-java-benchmarking)
-- [Microbenchmarking with Java] (https://www.baeldung.com/java-microbenchmark-harness)
-
-
+- [JMH - Great Java Benchmarking](https://dzone.com/articles/jmh-great-java-benchmarking)
+- [Microbenchmarking with Java](https://www.baeldung.com/java-microbenchmark-harness)
