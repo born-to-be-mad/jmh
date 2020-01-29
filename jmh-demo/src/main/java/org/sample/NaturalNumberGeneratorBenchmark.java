@@ -15,16 +15,20 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+/**
+ * The idea: generate N natural numbers and store them in a {@link List}.
+ * 
+ */
 @State(Scope.Thread)
-public class StreamsBenchmark {
+public class NaturalNumberGeneratorBenchmark {
 
   @Param({ "10" })
   private int number;
 
   @Benchmark
   @BenchmarkMode({ Mode.All })
-  // traditional method to generate N numbers and store it in List
-  public List<Integer> traditionalMethod(StreamsBenchmark T) {
+  // traditional method by using list.add()
+  public List<Integer> traditionalMethod(NaturalNumberGeneratorBenchmark T) {
     List<Integer> list = new ArrayList<>();
     for (int i = 1; i <= number; i++) {
       list.add(i);
@@ -34,13 +38,13 @@ public class StreamsBenchmark {
 
   @Benchmark
   @BenchmarkMode({ Mode.All })
-  // using #stream to generate N numbers and store it in List
-  public List<Integer> streamMethod(StreamsBenchmark T) {
+  // functional approach by using stream {@link IntStream}
+  public List<Integer> streamMethod(NaturalNumberGeneratorBenchmark T) {
     return IntStream.rangeClosed(1, number).boxed().collect(Collectors.toList());
   }
 
   public static void main(String[] args) throws RunnerException {
-    Options opt = new OptionsBuilder().include(StreamsBenchmark.class.getSimpleName()).forks(1).build();
+    Options opt = new OptionsBuilder().include(NaturalNumberGeneratorBenchmark.class.getSimpleName()).forks(1).build();
 
     new Runner(opt).run();
   }

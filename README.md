@@ -35,6 +35,9 @@ _JMH_ стало частью JDK начиная с JDK 12; для более р
 - Рекомендуемый способ запуска JMH тестов - использовать Maven для настройки автономного проекта, который зависит от jar-файлов нашего приложения. Этот подход предпочтителен для обеспечения правильной инициализации тестов и получения надежных результатов.
 
 - Можно выполнить тесты из существующего проекта и даже из среды IDE, однако настройка будет более сложной, аа результаты менее надежны.
+>> Doesn't it affect the quality of my benchmarks?
+A brief research shows that benchmark results are affected, but not that much. The whole research is described in [Research results](https://github.com/artyushov/idea-jmh-plugin/blob/master/research/results.md). Long story short, the maximum means difference observed was 2.2%.
+
 
 ### Setting up the benchmarking project
 
@@ -220,13 +223,23 @@ Benchmark | Mode | Cnt | Score | Error | Units
 ArraysSortBenchmark.arraysSort | thrpt | 20 | 3795959.757 | 43679.226 | ops/s 
 ArraysSortBenchmark.collectionsSort | thrpt | 20 | 853014.250 | 6256.061 | ops/s 
 
-- JHM measured average time:
--
+#### @BenchmarkMode({Mode.All}) which will benchmark all the following:
+##### NaturalNumberGeneratorBenchmark
+Пропускная способность метода потока лучше для небольшого диапазона 10. 
+Но она может или не может быть одинаковой для большого набора данных:
+```
+Throughput("thrpt", "Throughput, ops/time"),
+AverageTime("avgt", "Average time, time/op"),
+SampleTime("sample", "Sampling time"),
+SingleShotTime("ss", "Single shot invocation time"),
+All("all", "All benchmark modes");
+```
 
 ### Relevant Links
 
 - [JDK Code Tools: jmh](https://openjdk.java.net/projects/code-tools/jmh/)
+- [JMH samples](https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/)
+- [idea-jmh-plugin] (https://github.com/artyushov/idea-jmh-plugin)
 - [Benchmarking spring-cloud-sleuth](https://github.com/spring-cloud/spring-cloud-sleuth/tree/master/benchmarks/src/main/java/org/springframework/cloud/sleuth/benchmarks/jmh/benchmarks)
 - [Warm up JVM](https://www.baeldung.com/java-jvm-warmup)
-- [JMH - Great Java Benchmarking](https://dzone.com/articles/jmh-great-java-benchmarking)
 - [Microbenchmarking with Java](https://www.baeldung.com/java-microbenchmark-harness)
