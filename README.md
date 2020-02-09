@@ -1,5 +1,8 @@
 ## Java Microbenchmarking for Dummies
 
+> Click :star:if you like the project. Any pull requests are highly appreciated. 
+Follow me [@DzmitryMarudau](https://twitter.com/DzmitryMarudau) for technical remarks/proposals/feedbacks.
+
 ### Что такое JMH?
 
 #### По старинке
