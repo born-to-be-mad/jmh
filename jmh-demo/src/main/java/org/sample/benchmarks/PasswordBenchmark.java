@@ -1,4 +1,4 @@
-package org.sample;
+package org.sample.benchmarks;
 
 import java.nio.charset.Charset;
 

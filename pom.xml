@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.sample</groupId>
+  <artifactId>jmh-samples</artifactId>
+  <version>2020.1.0</version>
+  <packaging>pom</packaging>
+  <name>JMH benchmark samples</name>
+
+  <modules>
+    <module>for-looping-vs-streaming</module>
+    <module>jmh-demo</module>
+  </modules>
+
+  <properties>
+    <java.version>1.8</java.version>
+    <junit.version>5</junit.version>
+    <mockito.version>2.7.18</mockito.version>
+  </properties>
+
+  <profiles>
+  </profiles>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.sample</groupId>
+        <artifactId>for-looping-vs-streaming</artifactId>
+        <version>2020.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sample</groupId>
+        <artifactId>jmh-demo</artifactId>
+        <version>2020.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+
+</project>

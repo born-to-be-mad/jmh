@@ -1,4 +1,4 @@
-package org.sample;
+package org.sample.benchmarks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @State(Scope.Thread)
 public class NaturalNumberGeneratorBenchmark {
 
-  @Param({ "10" })
+  @Param({ "10", "1000", "1000000" })
   private int number;
 
   @Benchmark

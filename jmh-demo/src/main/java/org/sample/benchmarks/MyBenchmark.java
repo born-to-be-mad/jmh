@@ -29,7 +29,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.sample;
+package org.sample.benchmarks;
 
 import java.util.concurrent.TimeUnit;
 
