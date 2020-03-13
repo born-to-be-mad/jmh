@@ -16,8 +16,8 @@ public class IterationBenchmark {
     @Benchmark
     public int forUp() {
         int sum = 0;
-        for (int i = 0; i < ITERATIONS; i++) {
-            sum += i;
+        for (int index = 0; index < ITERATIONS; index++) {
+            sum += index;
         }
         return sum;
     }
@@ -30,8 +30,8 @@ public class IterationBenchmark {
     @Benchmark
     public int forDown() {
         int sum = 0;
-        for (int i = ITERATIONS; i-- > 0;) {
-            sum += i;
+        for (int index = ITERATIONS; index-- > 0;) {
+            sum += index;
         }
         return sum;
     }

@@ -99,7 +99,7 @@ mvn archetype:generate \
 Последние версии:
 
 - [JMH Core](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
-- [JMH Annottion Processor](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
+- [JMH Annotation Processor](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
 
 #### Build
 

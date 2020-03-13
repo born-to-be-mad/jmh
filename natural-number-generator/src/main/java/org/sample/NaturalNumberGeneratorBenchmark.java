@@ -1,4 +1,4 @@
-package org.sample.benchmarks;
+package org.sample;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,26 +25,38 @@ public class NaturalNumberGeneratorBenchmark {
   @Param({ "10", "1000", "1000000" })
   private int number;
 
+  /**
+   * Object-Oriented Approach by using java.util API.
+   *
+   * @return the list of natural numbers
+   */
   @Benchmark
-  @BenchmarkMode({ Mode.All })
-  // traditional method by using list.add()
-  public List<Integer> traditionalMethod(NaturalNumberGeneratorBenchmark T) {
+  @BenchmarkMode({ Mode.Throughput })
+  public List<Integer> generateViaIteration() {
     List<Integer> list = new ArrayList<>();
-    for (int i = 1; i <= number; i++) {
-      list.add(i);
+    for (int index = 1; index <= number; index++) {
+      list.add(index);
     }
     return list;
   }
 
+  /**
+   * Functional Approach by using IntStream.
+   *
+   * @return the list of natural numbers
+   */
   @Benchmark
-  @BenchmarkMode({ Mode.All })
-  // functional approach by using stream {@link IntStream}
-  public List<Integer> streamMethod(NaturalNumberGeneratorBenchmark T) {
-    return IntStream.rangeClosed(1, number).boxed().collect(Collectors.toList());
+  @BenchmarkMode({ Mode.Throughput })
+  public List<Integer> streamMethod() {
+    return IntStream.rangeClosed(1, number)
+                    .boxed()
+                    .collect(Collectors.toList());
   }
 
   public static void main(String[] args) throws RunnerException {
-    Options opt = new OptionsBuilder().include(NaturalNumberGeneratorBenchmark.class.getSimpleName()).forks(1).build();
+    Options opt = new OptionsBuilder().include(NaturalNumberGeneratorBenchmark.class.getSimpleName())
+                                      .forks(1)
+                                      .build();
 
     new Runner(opt).run();
   }
