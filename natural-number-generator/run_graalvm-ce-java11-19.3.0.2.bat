@@ -1,1 +1,1 @@
-c:\BIN\Java\graalvm-ce-java11-19.3.0.2\bin\java.exe  -jar target/benchmarks.jar >> ../results/natural-number-generator_graalvm-ce-java11-19.3.0.2_ALL.res
+c:\BIN\Java\graalvm-ce-java11-19.3.0.2\bin\java.exe  -jar target/benchmarks.jar >> ../results/natural-number-generator_ALL_graalvm-ce-java11-19.3.0.2.res

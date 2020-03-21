@@ -26,12 +26,12 @@ public class NaturalNumberGeneratorBenchmark {
   private int number;
 
   /**
-   * Object-Oriented Approach by using java.util API.
+   * Object-Oriented Approach by using Java API {@link java.util.List}.
    *
    * @return the list of natural numbers
    */
   @Benchmark
-  @BenchmarkMode({ Mode.Throughput })
+  @BenchmarkMode({ Mode.All })
   public List<Integer> generateViaIteration() {
     List<Integer> list = new ArrayList<>();
     for (int index = 1; index <= number; index++) {
@@ -41,12 +41,12 @@ public class NaturalNumberGeneratorBenchmark {
   }
 
   /**
-   * Functional Approach by using IntStream.
+   * Functional Approach by using {@link java.util.stream.IntStream}.
    *
    * @return the list of natural numbers
    */
   @Benchmark
-  @BenchmarkMode({ Mode.Throughput })
+  @BenchmarkMode({ Mode.All })
   public List<Integer> streamMethod() {
     return IntStream.rangeClosed(1, number)
                     .boxed()
@@ -54,10 +54,11 @@ public class NaturalNumberGeneratorBenchmark {
   }
 
   public static void main(String[] args) throws RunnerException {
-    Options opt = new OptionsBuilder().include(NaturalNumberGeneratorBenchmark.class.getSimpleName())
-                                      .forks(1)
-                                      .build();
+    Options options = new OptionsBuilder()
+        .include(NaturalNumberGeneratorBenchmark.class.getSimpleName())
+        .forks(1)
+        .build();
 
-    new Runner(opt).run();
+    new Runner(options).run();
   }
 }
