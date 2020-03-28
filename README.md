@@ -9,10 +9,15 @@ Follow me [@DzmitryMarudau](https://twitter.com/DzmitryMarudau) for technical re
 ### Что такое JMH?
 
 #### По старинке
+```pseudo-code
+START_TIME = getCurrentTime()
+executeAction()
+ELAPSED_TIME = getCurrentTime() - START_TIME
+```
 
 ```java
 long start = System.currentTimeMillis();
-doCalculation();
+executeAction();
 long end = System.currentTimeMillis();
 System.out.println("Seconds elapsed: " + (start - end) / 1000F + " seconds." );
 ```

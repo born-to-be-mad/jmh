@@ -10,6 +10,7 @@
   <modules>
     <module>for-looping-vs-streaming</module>
     <module>natural-number-generator</module>
+    <module>measuring-time</module>
     <module>jmh-demo</module>
   </modules>
 
@@ -27,6 +28,16 @@
       <dependency>
         <groupId>org.sample</groupId>
         <artifactId>for-looping-vs-streaming</artifactId>
+        <version>2020.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sample</groupId>
+        <artifactId>natural-number-generator</artifactId>
+        <version>2020.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.sample</groupId>
+        <artifactId>measuring-time</artifactId>
         <version>2020.1.0</version>
       </dependency>
       <dependency>
