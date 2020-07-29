@@ -1,9 +1,6 @@
-package org.sample.benchmarks;
+package by.dma.benchmarks;
 
 import java.nio.charset.Charset;
-
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -15,6 +12,9 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
+
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 
 public class PasswordBenchmark {
 

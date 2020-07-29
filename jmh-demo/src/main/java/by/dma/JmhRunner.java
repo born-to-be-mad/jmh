@@ -1,4 +1,4 @@
-package org.sample;
+package by.dma;
 
 import java.io.IOException;
 

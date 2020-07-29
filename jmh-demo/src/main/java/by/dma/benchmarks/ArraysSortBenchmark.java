@@ -1,4 +1,4 @@
-package org.sample.benchmarks;
+package by.dma.benchmarks;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -12,7 +12,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.sample.utils.MathHelper;
+import by.dma.utils.MathHelper;
 
 @Measurement(iterations = 2)
 @Warmup(iterations = 1)

@@ -1,4 +1,4 @@
-package org.sample.utils;
+package by.dma.utils;
 
 import java.util.Arrays;
 
