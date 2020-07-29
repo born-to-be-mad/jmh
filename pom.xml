@@ -10,6 +10,7 @@
 
   <modules>
     <module>for-looping-vs-streaming</module>
+    <module>expensive-exceptions</module>
     <module>natural-number-generator</module>
     <module>measuring-time</module>
     <module>jmh-demo</module>
