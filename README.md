@@ -1,4 +1,4 @@
-## Java Microbenchmarking для чайников
+# Java Micro-benchmarking(JMH) для чайников
 
 > Click :star: если вам нравится проект. Any pull requests are highly appreciated. 
 Follow me [@DzmitryMarudau](https://twitter.com/DzmitryMarudau) for technical remarks/proposals/feedbacks.
@@ -6,9 +6,30 @@ Follow me [@DzmitryMarudau](https://twitter.com/DzmitryMarudau) for technical re
 > Click :star:if you like the project. Any pull requests are highly appreciated. 
 Follow me [@DzmitryMarudau](https://twitter.com/DzmitryMarudau) for technical remarks/proposals/feedbacks.
 
-### Что такое JMH?
 
-#### По старинке
+# Введение
+"Преждевременная оптимизация — корень всех зол”.(Дональдом Кнут, 1974гг.)
+Как разработчики, мы должны знать, какие факторы в действительности отличают различные виды задержки, чтобы понимать, какие части стоит оптимизировать.
+
+Одним из самых больших врагов оценки производительности являются компиляторы и среды выполнения.
+Все компиляторы в той или иной степени пытаются оптимизировать наш код.
+Среды выполнения и виртуальные машины оптимизируют еще больше, работая с промежуточным языком, таким как байт-код или CILЮ и могут это сделать в самый последний момент:
+- удаление null-проверок, 
+- оптимизация потока управления для предпочтения горячих путей, 
+- размотка циклов, 
+- встраивание методов и конечных переменных, 
+- генерация собственного кода
+- и многое другое
+Например всем известно, что Java заменяет конкатенацию строк на StringBuilder, чтобы уменьшить количество создаваемых строк String.
+
+Фактическая производительность может быть не постоянной и подверженной изменениям, а все из-за того, что среда выполнения или виртуальная машина лучше понимают ваш код и оптимизируют его глубже.
+В результате мы не можем проверить код, просто запустив его несколько раз в цикле, а затем измерив с помощью секундомера время после вызова метода.
+
+Самый простой способ по-настоящему проверить свой код — это `Java Microbenchmark Harness (JMH)`.
+
+## Что такое JMH?
+
+### По старинке
 ```pseudo-code
 START_TIME = getCurrentTime()
 executeAction()
@@ -22,15 +43,28 @@ long end = System.currentTimeMillis();
 System.out.println("Seconds elapsed: " + (start - end) / 1000F + " seconds." );
 ```
 
-#### JMH = Java Microbenchmark Harness
+### JMH = Java Microbenchmark Harness
 
 _JMH_ - это инструмент Java для сборки, запуска и анализа нано / микро / милли / макро тестов, написанных на Java и других языках, предназначенных для JVM.
 _JMH_ разрабатывался теме же людьми, которые реализовывали JVM чтобы понять как Java выполняет оптимизацию во ввремя выполнения.
+_JMH_ помогает оценить фактическую производительность, принимая во внимание прогрев JVM и оптимизацию кода, которые могут сделать результат неясным.
 
 Часто имеется небольшой блок кода, который является критичным для производительности программы.
 Например, часть приложения, которая включает в себя большое количество вычислений и обработки данных, является критичной для производительности, а измерение времени выполнения этой части и называется _микро-тестированием_(micro-benchmarking). Выполнение этой операции несколько раз в определнной среде с определенной конфигурацией памяти и ЦП, позволяет получить согласованные(consistent) результаты. Время выполнения каждого прогона записывается и консолидируется для получения среднего времени, известного как микро-эталоны(micro-benchmarks).
 
-### Возможности
+JMH стал де-факто стандартом для тестов производительности и был включен в JDK 12(!). 
+До этой версии зависимости нужно добавлять вручную:
+* Ядро JMH - [JMH Core](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar);
+* Генераторы JMH: процессоры аннотаций - [JMH Annotation Processor](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar). 
+
+## Запуск
+Мы можем запустить бенчмарк с помощью IDE или даже предпочитаемой системы сборки:
+* Gradle;
+* IntelliJ;
+* Jenkins;
+* TeamCity.
+
+## Возможности
 
 - разогревать JVM(add a JVM warm-up stage);
 - задавать количество прогонов/потоков в каждом прогоне(specify the number of runs/threads in each run);
@@ -39,7 +73,7 @@ _JMH_ разрабатывался теме же людьми, которые р
 - настраивать формат вывода результатов(configure the result output format).
 - Конфигурировать JVM специфичные параметры, напр. отключить втраивание (add specific JVM related params, e.g. disable inlining).
 
-### Основы
+## Основы
 
 _JMH_ стало частью JDK начиная с JDK 12; для более ранних версий, надо явно указывать зависимости(`jmh-core` и `jmh-generator-annprocess`) в проекте.
 
@@ -50,7 +84,7 @@ _JMH_ стало частью JDK начиная с JDK 12; для более р
 A brief research shows that benchmark results are affected, but not that much. The whole research is described in [Research results](https://github.com/artyushov/idea-jmh-plugin/blob/master/research/results.md). Long story short, the maximum means difference observed was 2.2%.
 
 
-### Setting up the benchmarking project
+## Setting up the benchmarking project
 
 Следующая команда генерирует JMH-driven проект
 
@@ -106,7 +140,7 @@ mvn archetype:generate \
 - [JMH Core](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
 - [JMH Annotation Processor](https://search.maven.org/classic/#artifactdetails%7Corg.openjdk.jmh%7Cjmh-generator-annprocess%7C1.22%7Cjar)
 
-#### Build
+### Build
 
 Собираем проект "классической" командой maven: `mvn clean install`.
 
@@ -157,11 +191,13 @@ This process of tuning the JVM is known as warming up.
 
 Типы бенчмарков конфигурируются через @BenchmarkMode
 
-- Throughput
-- AverageTime
-- SampleTime
-- SingleShotTime
-- All
+- `Throughput`: Число операций на единицу времени.
+- `AverageTime`: Среднее время на операцию
+- `SampleTime`: Время на каждую операцию, включая минимальное и максимальное.
+- `SingleShotTime`: Время на единичную операцию.
+- `All`: Всё вышеперечисленное.
+
+Режим по умолчанию — `Mode.Throughput`
 
 ```
     /**
@@ -218,7 +254,51 @@ This process of tuning the JVM is known as warming up.
     All("all", "All benchmark modes"),
 ```    
 
-#### Разминка(warmup) и выполнение(execution)
+### Работа с JVM
+
+#### Разминка(warmup) 
+Для прогрева JVM мы можем добавить аннотацию `@Warmup(iterations = <int>)`. 
+Наши тесты производительности будут запущены в указанное время, и результаты будут отброшены. 
+После этого JVM будет уже достаточно “нагрета”, а JMH запустит действительные тесты и предоставит нам результаты.
+
+Также `@Warmup` аннотация может использоваться для управления количеством итераций прогрева.
+Например, `@Warmup (iterations = 5)` сообщает JMH, что будет достаточно пяти итераций прогрева, в отличие от 20(по умолчанию).
+
+#### Выполнение(execution)
+
+#### Сколько времени?
+Мы можем указать, за какую единицу времени нужно выводить результаты, добавив аннотацию `@OutputTimeUnit(<java.util.concurrent.TimeUnit>)`:
+- TimeUnit.NANOSECONDS;
+- TimeUnit.MICROSECONDS;
+- TimeUnit.MILLISECONDS;
+- TimeUnit.SECONDS;
+- TimeUnit.MINUTES;
+- TimeUnit.HOURS;
+- TimeUnit.DAYS.
+
+#### Управление состояниями
+Предоставление состояния позволяет нам упростить код тестов производительности. 
+Создав вспомогательный класс со `@Scope(…)`, мы можем указать параметры, которые нужно замерить
+```java
+@State(Scope.Benchmark)
+public class MyBenchmarkState {
+ 
+    @Param({ "1", "10", "100", "1000", "10000" })
+    public int value;
+}
+```
+
+Если мы используем класс состояния в методе бенчмарка, JMH установит параметры соответственно и запустит тест для каждого значения:
+```java
+@Benchmark
+public void benchmark1(MyBenchmarkState state) {
+StringBuilder builder = new StringBuilder();
+
+    for (int idx = 0; idx > state.value; idx++) {
+        builder.append("abc");
+    }
+}
+```
 
 Используя @Fork аннотацию мы можем управлять выполнением теста:
 
@@ -236,16 +316,9 @@ public void init() {
 }
 ```
 
-Также @Warmup аннотация может использоваться для управления количеством итераций прогрева. Например, `@Warmup (iterations = 5)` сообщает JMH, что будет достаточно пяти итераций прогрева, в отличие от 20(по умолчанию).
+_JMH можно конфигурировать через аннотации или опции_
 
-##### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
-
-Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
-Мы можем изучить влияние на производительность, используя объект @State. Сам по себе наш @Benchmark будет использовать в качетве параметра наш объект аннотированный как @State
-
-_JMH можно конфигурировать через аннотации или опции _
-
-#### Конфигурация через аннотации
+### Конфигурация через аннотации
 
 ```java
 
@@ -271,27 +344,185 @@ Options opt = new OptionsBuilder()
                 .build();
 ```
 
-### Results of the Benchmark
+## Best Practices
+Чтобы от замеров производительности была польза, они должны уметь обойти оптимизацию JVM, или мы просто проверим, насколько хороша JVM, а не наш код.
+### Мертвый код
+JVM способна определить, присутствует ли у вас мертвый код, и удалить его:
+```java
+@Benchmark
+public void benchmark1() {
+  long lhs = 123L;
+  long rhs = 321L;
+  long result = lhs + rhs;
+}
 ```
-# JMH version: 1.22
-# VM version: JDK 1.8.0_231, Java HotSpot(TM) 64-Bit Server VM, 25.231-b11
-# VM invoker: C:\BIN\Java\jdk1.8.0_231\jre\bin\java.exe
-# VM options: <none>
-# Warmup: 1 iterations, 10 s each
-# Measurement: 2 iterations, 10 s each
-# Timeout: 10 min per iteration
-# Threads: 1 thread, will synchronize iterations
-# Benchmark mode: Throughput, ops/time
-# Benchmark: org.sample.ArraysSortBenchmark.testParallelArraySort_10
+Переменная result ни разу не используется в коде, поэтому это по факту — мертвый код, и все три строки внутри бенчмарка будут удалены.
+
+*Solution:*: есть два варианта, чтобы заставить JVM не убирать мертвый код:
+* Не используйте возвращаемый тип void. Напротив, если вы примените в методе return result, JVM не может быть на 100% уверена, что это мертвый код, поэтому он не будет удален.
+* Используйте Blackhole. Класс org.openjdk.jmh.infra.Blackhole может быть передан в качестве аргумента и предоставляет методы consume(…), так что результат не будет мертвым кодом.
+
+### Оптимизация постоянных величин
+Даже если мы будем возвращать result или использовать Blackhole, чтобы предотвратить удаление мертвого кода, JVM может оптимизировать значения постоянных. Это сводит наш код к чему-то вроде этого:
+```java
+@Benchmark
+public long benchmark1() {
+  long result = 444L;
+  return result;
+}
 ```
 
-Benchmark | Mode | Cnt | Score | Error | Units
---- | -- | - | -- | -- | --
-ArraysSortBenchmark.arraysSort | thrpt | 20 | 3795959.757 | 43679.226 | ops/s 
-ArraysSortBenchmark.collectionsSort | thrpt | 20 | 853014.250 | 6256.061 | ops/s 
+*Solution:* предоставление класса состояния не дает JVM “оптимизировать” (выкидывать) постоянные величины:
+```java
+@State(Scope.Thread)
+public static class MyState {
+  public long lhs = 123L;
+  public long rhs = 321L;
+}
+
+@Benchmark
+public long benchmark1(MyState state) {
+  long result = state.lhs + state.rhs;
+  return result;
+}
+```
+
+### Небольшие модули
+Измерение производительности во многом напоминает модульное тестирование. 
+Не стоит проводить тесты или замеры над большими элементами кода. 
+Чем меньше элементы кода, тем меньше возможные побочные эффекты. 
+Нам нужно свести к минимуму все, что может загрязнить результаты замеров производительности.
+
+### (Почти) Продакшен
+*"It works on my machine"*
+Каждый раз, когда вы видите результаты тестов производительности, выполненных на машине разработчика, 
+такой как MacBook Pro ;) , отнеситесь к ним с недоверием. 
+Машины разработчиков ведут себя по-другому в сравнении с продакшен-окружениями, и это зависит от множества параметров 
+(например, настройки виртуальной машины, процессор, память, операционная система, системные настройки и т. д.).
+
+Типичная среда для разработки на Java состоит из нескольких контейнеров Docker на одной машине (Eclipse, MySQL/Oracle/MongoDB, RabbitMQ и т.п.), 
+а также некоторых других контейнеров (Postgres, MariaDB, Killbill и .т.п). Все они делят одни и те же 32 ГБ оперативной памяти и 8 потоков процессора. 
+_Продакшен_, в свою очередь, распределяется между несколькими хостами, с меньшим количеством контейнеров и удвоением потоков оперативной памяти и процессора, а также конфигурацией SSD RAID 1.
+
+Запуск бенчмарков локально — хорошая отправная точка, но она не обязательно будет таким же хорошим отражением реального мира, 
+особенно в плане граничных случаев.
+
+## Benchmark Samples and Results
+
+### FACTORIAL and the Power of Stream API
+Nice and powerful solution via Stream API
+```java
+public static BigInteger streamedParallel(int n) {
+    if(n < 2) return BigInteger.valueOf(1);
+    return IntStream.rangeClosed(2, n).parallel().mapToObj(BigInteger::valueOf).reduce(BigInteger::multiply).get();
+}
+```
+Тестируем три реализации вычисления факториала — наивную, на обычном потоке и на параллельном потоке. 
+Разумно проверить алгоритм для различных значений n — 10, 100, 1000, 10000 и 50000, чтобы представить динамику изменения результатов. 
+Проводится пять итераций разогрева `@Warmup(iterations = 5)` и десять итераций с замером `@Measurement(iterations = 10)`, 
+всё это повторяется дважды (с перезапуском Java-машины) `@Fork(2)`, то есть для каждого теста делается 20 замеров. 
+Обратите внимание на чёрную дыру `Blackhole`: она нужна, чтобы JIT-компилятор не удалил результат вычислений, решив, что он всё равно не используется.
+
+See `by.dma.benchmarks.factorial.FactorialBenchmark.java`
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM` 
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13` 
+
+```
+Benchmark                         (n)  Mode  Cnt       Score       Error  Units
+Factorial.testNaive                10  avgt   20       0.298 ±     0.005  us/op
+```
+
+Наивный тест в целом подтверждает теоретическое предположение о квадратичой сложности алгоритма. 
+Разделим время на n²:
+```cvs
+n = 10:    0.002980
+n = 100:   0.000511
+n = 1000:  0.000279
+n = 10000: 0.000322
+n = 50000: 0.000389
+```
+Прирост на больших значениях, вероятно, связан с увеличением расхода памяти и активизацией сборщика мусора.
+
+Нераспараллеленный поток для малых n работает ожидаемо несколько большее время (на 13% для n = 10 и на 6% для n = 100): всё же обвязка Stream API что-то съедает. Однако удивительно, что для больших n потоковый вариант работает на 4-8% быстрее, хотя алгоритмически выглядит так же. Очередное подтверждение тому, что о производительности опасно рассуждать теоретически, не проводя замеры. Оптимизации JIT-компилятора, кэширование процессора, предсказание ветвления и прочие факторы очень трудно учесть в теории.
+
+Распараллеленный поток ожидаемо существенно медленнее для очень коротких операций. Однако прирост скорости наблюдается уже при n = 1000, когда полный расчёт занимает около 270 мкс в последовательном режиме и только 75 в параллельном. Это отлично согласуется со Stream Parallel Guidance (спасибо apangin за ссылку), где сказано, что распараллеливать имеет смысл задачи, которые выполняются дольше 100 мкс. При больших же значениях n распараллеленный поток на коне: мы получаем прирост скорости в 18 раз. В целом это согласуется с приростом у 5nw, помноженным на число потоков (1.7/0.8*8 = 17).
+
+У ForkJoinPool очень маленький оверхед, поэтому даже миллисекундная задача получает выигрыш по скорости. При этом алгоритмы вида «разделяй и властвуй» естественным образом перекладываются на параллельные потоки, благодаря чему параллельный поток может оказаться существенно быстрее последовательного.
 
 
-### Relevant Links
+### CHECK IF STRING IS EMPTY
+```java
+//equalsPost
+if (s != null && s.equals(“”)) {
+    // do some logic
+}
+// preEquals
+if (“”.equals(s)) {
+    // do some logic
+}
+// notNullAndIsEmpty
+if (s != null && s.isEmpty()) {
+    // do some logic
+}
+```
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
+```cvs
+
+```
+
+It is not hard to see where this difference in performance comes from after we look at the String.equals() method:
+```java
+    public boolean equals(Object anObject) {
+        if (this == anObject) {
+            return true;
+        }
+        if (anObject instanceof String) {
+            String aString = (String)anObject;
+            if (coder() == aString.coder()) {
+                return isLatin1() ? StringLatin1.equals(value, aString.value)
+                                  : StringUTF16.equals(value, aString.value);
+            }
+        }
+        return false;
+    }
+```
+Let's compare with `String.isEmpty()`
+```java
+  public boolean isEmpty() {
+      return value.length == 0;
+  }
+```
+
+What do these results tell us? Always use isEmpty() instead of “”.equals(). It will save you a few CPU cycles. This change is so simple! 
+Also, there is one more, less obvious benefit. isEmpty() generates less byte code, so your compiler has more options for inlining. 
+That’s always good for performance.
+In some cases, the input string could be *interned* and the “”.equals(s) performance would be similar to the isEmpty() method when s == “”.
+
+What about other libraries and frameworks?
+*  Spring framework = dozens of `"".equals(xxx)`
+*  Hibernate = dozens of `"".equals(xxx)`
+
+Conclusion:
+* Always use String.isEmpty() instead of “”.equals(s) or s.equals(“”)
+* For hot paths use a specialized version of String.equals(String s) - equals(char c)
+
+### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
+
+Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
+Мы можем изучить влияние на производительность, используя объект @State. Сам по себе наш @Benchmark будет использовать в качетве параметра наш объект аннотированный как @State
+
+## Заключение
+* Хорошие (микро-)бенчмарки - это сложно! 
+Почти всё в процессе продвижения от нашего исходного кода до запуска исполнения на кремнии работает против точных измерений производительности. 
+Но с помощью JMH мы получаем достаточно контроля, чтобы добиться надежных результатов.
+
+* Корень оптимизации заключается в том, чтобы перестать беспокоиться о ненужных вещах !. 
+Действительно ли результаты ваших замеров производительности применимы к выполнению кода в реальности? 
+Взгляните на общую картину и сосредоточьтесь на реальных проблемах, таких как оптимизация доступа к данным, алгоритмов и структур данных.
+
+## Relevant Links
 
 - [JDK Code Tools: jmh](https://openjdk.java.net/projects/code-tools/jmh/)
 - [JMH samples](https://hg.openjdk.java.net/code-tools/jmh/file/tip/jmh-samples/src/main/java/org/openjdk/jmh/samples/)
