@@ -14,7 +14,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 /**
- * TODO
+ * Micro optimizations in Java: checking the performance of different approaches for 'Empty String checking'.
  *
  * @author dzmitry.marudau
  * @since 2020.4

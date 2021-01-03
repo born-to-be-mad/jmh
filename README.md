@@ -465,12 +465,12 @@ n = 50000: 0.000182
 Очередное подтверждение тому, что о производительности опасно рассуждать теоретически, не проводя замеры. 
 Оптимизации JIT-компилятора, кэширование процессора, предсказание ветвления и прочие факторы очень трудно учесть в теории.
 
+**Conclusion:**
 Распараллеленный поток ожидаемо существенно медленнее для очень коротких операций. 
 Однако прирост скорости наблюдается уже при n = 1'000, когда полный расчёт занимает около 138 мкс в последовательном режиме и только 32 в параллельном. 
 Это отлично согласуется со [Stream Parallel Guidance](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html), 
 где сказано, что распараллеливать имеет смысл задачи, которые выполняются дольше 100 мкс. 
-При больших же значениях n распараллеленный поток на коне: мы получаем прирост скорости в 15 раз(n = 10'000) и 26 раз(n = 100'000). 
-В целом это согласуется с приростом у 5nw, помноженным на число потоков (1.7/0.8*8 потоков = 17).
+При больших же значениях n распараллеленный поток на коне: мы получаем прирост скорости в 15 раз(n = 10'000) и 26 раз(n = 100'000).
 
 У ForkJoinPool очень маленький оверхед, поэтому даже миллисекундная задача получает выигрыш по скорости. 
 При этом алгоритмы вида «разделяй и властвуй» естественным образом перекладываются на параллельные потоки, благодаря чему параллельный поток может оказаться существенно быстрее последовательного.
@@ -494,7 +494,15 @@ if (s != null && s.isEmpty()) {
 *Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
 with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
 ```cvs
+# Run complete. Total time: 00:01:35
 
+Benchmark                               (strParams)  Mode  Cnt  Score   Error  Units
+EmptyStringEquals.equalsPost                         avgt   10  3.232 ± 0.109  ns/op
+EmptyStringEquals.equalsPost         nonEmptyString  avgt   10  2.729 ± 0.028  ns/op
+EmptyStringEquals.notNullAndIsEmpty                  avgt   10  2.278 ± 0.037  ns/op
+EmptyStringEquals.notNullAndIsEmpty  nonEmptyString  avgt   10  2.238 ± 0.027  ns/op
+EmptyStringEquals.preEquals                          avgt   10  3.282 ± 0.115  ns/op
+EmptyStringEquals.preEquals          nonEmptyString  avgt   10  3.025 ± 0.599  ns/op
 ```
 
 It is not hard to see where this difference in performance comes from after we look at the String.equals() method:
@@ -513,7 +521,12 @@ It is not hard to see where this difference in performance comes from after we l
         return false;
     }
 ```
-Let's compare with `String.isEmpty()`
+What we have here:
+- operator `instanceOf`; 
+- class casting;
+- 3 'if' statements.
+
+Let's compare with `String.isEmpty()`:
 ```java
   public boolean isEmpty() {
       return value.length == 0;
@@ -529,8 +542,32 @@ What about other libraries and frameworks?
 *  Spring framework = dozens of `"".equals(xxx)`
 *  Hibernate = dozens of `"".equals(xxx)`
 
-Conclusion:
-* Always use String.isEmpty() instead of “”.equals(s) or s.equals(“”)
+**Conclusion:**
+* Always use `String.isEmpty()` instead of `"".equals(s)` or `s.equals("")`
+
+### ONE CHAR EQUALS
+A typical scenario when working with web-servers `"/".equals(url)` or `url.equals("/")`.
+The problem is the same = too complicated `String.equals()` method.
+But we really need one char check. But `String` class doesn’t have the `equals(char c)` method!
+Let's try `url != null && url.length() == 1 && url.charAt(0) == '/';`.
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
+```cvs
+# Run complete. Total time: 00:01:35
+
+Benchmark                                 (url)  Mode  Cnt  Score   Error  Units
+OneCharEquals.equalsOptimized                 /  avgt   10  2.558 ± 0.086  ns/op
+OneCharEquals.equalsPre                       /  avgt   10  3.871 ± 0.074  ns/op
+OneCharEquals.equalsPost                      /  avgt   10  4.214 ± 0.072  ns/op
+OneCharEquals.equalsOptimized  /test/server/url  avgt   10  2.359 ± 0.060  ns/op
+OneCharEquals.equalsPost       /test/server/url  avgt   10  2.588 ± 0.054  ns/op
+OneCharEquals.equalsPre        /test/server/url  avgt   10  2.797 ± 0.068  ns/op
+```
+About 50% better performance for an “/” string and about 8-10% better performance for the other strings.
+The point here is that typical web servers have to handle this check on every request(!)
+
+**Conclusion:**
 * For hot paths use a specialized version of String.equals(String s) - equals(char c)
 
 ### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
