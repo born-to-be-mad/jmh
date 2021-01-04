@@ -636,6 +636,44 @@ StringEqualsIgnoreCase.equalsIgnoreCase      anotherString  avgt   10   2.345 ±
 What about other libraries and frameworks?
 No occurrences found for `equals(param.toLowerCase())`. 
 
+### Check WEB-server protocol via String methods
+A typical scenario when working with web-servers to check the protocol f.e. 'https'.
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
+```cvs
+# Run complete. Total time: 00:03:11
+
+Benchmark                                                         (url)  Mode  Cnt   Score   Error  Units
+StringStartWith.regionMatches              https://facebook.com/loginMe  avgt   10   4.205 ± 0.108  ns/op
+StringStartWith.regionMatches              Https://facebook.com/loginMe  avgt   10  10.810 ± 0.319  ns/op
+StringStartWith.regionMatches               http://facebook.com/loginMe  avgt   10   6.047 ± 0.127  ns/op
+StringStartWith.regionMatches                           not url pattern  avgt   10   6.541 ± 0.113  ns/op
+StringStartWith.substringEqualsIgnoreCase  https://facebook.com/loginMe  avgt   10   9.560 ± 0.297  ns/op
+StringStartWith.substringEqualsIgnoreCase  Https://facebook.com/loginMe  avgt   10   9.459 ± 0.275  ns/op
+StringStartWith.substringEqualsIgnoreCase   http://facebook.com/loginMe  avgt   10   9.180 ± 0.349  ns/op
+StringStartWith.substringEqualsIgnoreCase               not url pattern  avgt   10   9.216 ± 0.069  ns/op
+StringStartWith.toLowerCaseStartsWith      https://facebook.com/loginMe  avgt   10  29.636 ± 2.802  ns/op
+StringStartWith.toLowerCaseStartsWith      Https://facebook.com/loginMe  avgt   10  28.966 ± 0.788  ns/op
+StringStartWith.toLowerCaseStartsWith       http://facebook.com/loginMe  avgt   10  26.874 ± 0.630  ns/op
+StringStartWith.toLowerCaseStartsWith                   not url pattern  avgt   10  12.562 ± 0.314  ns/op
+```
+* for all cases the `String.regionMatches` wins almost in all cases.
+* the only downside of the regionMatches is that it’s not very self-descriptive, has 5 parameters 
+  and it’s hard to see what method does if you aren’t used to it. However, you can add a utility method here, like this
+```java
+static boolean startsWithIgnoreCase(String url, String param) {
+        return url.regionMatches(true, 0, param, 0, param.length());
+}
+```
+
+**Conclusion:**
+* Always choose `String.regionMatches()` over alternatives (3-d party library methods included) like `toLowerCase().startsWith()`.
+
+What about other libraries and frameworks?
+* Spring/Hibernate - both libraries did it great. Only one or two similar code constructions.
+* about 2 millions occurrences on github for `toLowerCase().startWith("http://")` 
+
 ### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
 
 Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
