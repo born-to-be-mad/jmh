@@ -570,6 +570,72 @@ The point here is that typical web servers have to handle this check on every re
 **Conclusion:**
 * For hot paths use a specialized version of String.equals(String s) - equals(char c)
 
+### `String.equalsIgnoreCase` vs `String.equals`
+A typical scenario when working with web-servers `"value".equals(param)` or `value.equalsIgnoreCase(param)`.
+* `toLowerCase()` allocates a new instance of String object
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 1.8.0_231, Java HotSpot(TM) 64-Bit Server VM, 25.231-b11`:
+```cvs
+# Run complete. Total time: 00:03:10
+Benchmark                                      (strParams)  Mode  Cnt   Score   Error  Units
+StringEqualsIgnoreCase.equals                  HELLO WORLD  avgt   10   3.543 ± 0.116  ns/op
+StringEqualsIgnoreCase.equals                  Hello World  avgt   10   3.535 ± 0.102  ns/op
+StringEqualsIgnoreCase.equals                  hello world  avgt   10   4.937 ± 0.130  ns/op
+StringEqualsIgnoreCase.equals                anotherString  avgt   10   2.290 ± 0.018  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    HELLO WORLD  avgt   10  48.173 ± 1.391  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    Hello World  avgt   10  42.348 ± 1.285  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    hello world  avgt   10  16.270 ± 0.247  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase  anotherString  avgt   10  39.119 ± 1.090  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        HELLO WORLD  avgt   10  29.706 ± 0.363  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        Hello World  avgt   10  20.229 ± 0.352  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        hello world  avgt   10   5.436 ± 0.129  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase      anotherString  avgt   10   2.138 ± 0.064  ns/op
+```
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
+```cvs
+# Run complete. Total time: 00:03:11
+
+Benchmark                                      (strParams)  Mode  Cnt   Score   Error  Units
+StringEqualsIgnoreCase.equals                  HELLO WORLD  avgt   10   3.907 ± 0.042  ns/op
+StringEqualsIgnoreCase.equals                  Hello World  avgt   10   3.940 ± 0.087  ns/op
+StringEqualsIgnoreCase.equals                  hello world  avgt   10   4.834 ± 0.048  ns/op
+StringEqualsIgnoreCase.equals                anotherString  avgt   10   2.784 ± 0.076  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    HELLO WORLD  avgt   10  26.051 ± 0.811  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    Hello World  avgt   10  21.354 ± 0.593  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase    hello world  avgt   10  12.717 ± 0.349  ns/op
+StringEqualsIgnoreCase.equalsAndToLowerCase  anotherString  avgt   10  21.570 ± 0.694  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        HELLO WORLD  avgt   10  27.601 ± 0.511  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        Hello World  avgt   10  18.771 ± 0.372  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase        hello world  avgt   10  15.163 ± 0.244  ns/op
+StringEqualsIgnoreCase.equalsIgnoreCase      anotherString  avgt   10   2.345 ± 0.117  ns/op
+```
+* equalsIgnoreCase() is 15–30% faster than the equals(param.toLowerCase()) pattern. 
+  And about 10 times faster when the parameter doesn’t match the constant string. 
+```java
+    public boolean equalsIgnoreCase(String anotherString) {
+        return (this == anotherString) ? true
+                : (anotherString != null)
+                && (anotherString.length() == length())
+                && regionMatches(true, 0, anotherString, 0, length());
+    }
+```
+* the more upper case letters the string has, the slower the results. That’s because both `toLowerCase` and `equalsIgnoreCase` 
+   iterate over all chars and perform `Character.toLowerCase()` if chars don’t match.
+* `equals()` method outperforms `equalsIgnoreCase()` by 3-5 times.
+
+**Conclusion:**
+* use Java 11 to get the free improvements even without any code changes
+* use `equals()` when possible. For example, in case you have control over the data or the server API, 
+  you can do `toLowerCase()` on the UI or you can require the parameters of the API to be case sensitive.
+* when you don’t have control over the input, choose `equalsIgnoreCase()` over `equals(param.toLowerCase())`. 
+  It doesn’t allocate unnecessary objects, has a fast path when the string length doesn't match and it’s still faster on Java 8.
+
+What about other libraries and frameworks?
+No occurrences found for `equals(param.toLowerCase())`. 
+
 ### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
 
 Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
