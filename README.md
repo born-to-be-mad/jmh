@@ -674,6 +674,63 @@ What about other libraries and frameworks?
 * Spring/Hibernate - both libraries did it great. Only one or two similar code constructions.
 * about 2 millions occurrences on github for `toLowerCase().startWith("http://")` 
 
+### Obtain Enum value
+A typical scenario to obtain enum value via String is by using `valueOf`.
+
+*Results*(lower score means faster) on `Intel(R) Core(TM) i-7-9700 CPU @ 3.00Ghz(8 hardware cores), 32Gb RAM`
+with `JMH version: 1.23` and `VM version: JDK 11.0.1, OpenJDK 64-Bit Server VM, 11.0.1+13`:
+```cvs
+# Run complete. Total time: 00:02:24
+
+Benchmark                    (strParams)  Mode  Cnt  Score   Error  Units
+ObtainEnumValue.enumCache          VENUS  avgt   10  7.303 ± 0.307  ns/op
+ObtainEnumValue.enumCache           MARS  avgt   10  6.987 ± 0.056  ns/op
+ObtainEnumValue.enumCache        NEPTUNE  avgt   10  9.455 ± 2.373  ns/op
+ObtainEnumValue.enumSwitch         VENUS  avgt   10  4.871 ± 0.096  ns/op
+ObtainEnumValue.enumSwitch          MARS  avgt   10  4.915 ± 0.109  ns/op
+ObtainEnumValue.enumSwitch       NEPTUNE  avgt   10  5.374 ± 0.123  ns/op
+ObtainEnumValue.enumValueOf        VENUS  avgt   10  7.864 ± 0.169  ns/op
+ObtainEnumValue.enumValueOf         MARS  avgt   10  9.494 ± 0.155  ns/op
+ObtainEnumValue.enumValueOf      NEPTUNE  avgt   10  8.857 ± 0.293  ns/op
+```
+* custom `HashMap` implementation seems faster than regular `Enum.valueOf()` but still slower than the `switch` statement.
+* enum classes don’t have the Java `valueOf()` method. The compiler generates it during the compilation. 
+  Bytecode:
+```java
+  public static valueOf(Ljava/lang/String;)Lby/dma/benchmarks/enums/SolarPlanet;
+        L0
+        LINENUMBER 9 L0
+        LDC Lby/dma/benchmarks/enums/SolarPlanet;.class
+ALOAD 0
+        INVOKESTATIC java/lang/Enum.valueOf (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+        CHECKCAST by/dma/benchmarks/enums/SolarPlanet
+        ARETURN
+        L1
+        LOCALVARIABLE name Ljava/lang/String; L0 L1 0
+        MAXSTACK = 2
+        MAXLOCALS = 1
+```
+* java.lang.Enum.valueOf
+```java
+    public static <T extends Enum<T>> T valueOf(Class<T> enumType,
+                                                String name) {
+        T result = enumType.enumConstantDirectory().get(name);
+        if (result != null)
+            return result;
+        if (name == null)
+            throw new NullPointerException("Name is null");
+        throw new IllegalArgumentException(
+            "No enum constant " + enumType.getCanonicalName() + "." + name);
+    }
+```
+It is a regular volatile HashMap with the enum names as the keys(!)
+
+**Conclusion:**
+* For hot paths, consider using your own custom Map cache of the  `Enum.valueOf()` method. 
+  As an additional bonus, you could avoid throwing the Exception during the wrong input for some flows. 
+* For hot paths, go with the cached `Enum.values()` field. This will allow you to decrease the allocation rate
+
+
 ### Cравнительный анализа алгоритма хеширования может быть выполнена с использованием @State
 
 Предположим, мы решили добавить дополнительную защиту от словарных атак на базу паролей, хешируя пароль несколько сотен раз.
